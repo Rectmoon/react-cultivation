@@ -17,7 +17,7 @@ function multiEntryPlugin(entries) {
     config.entry = entries.reduce(
       (res, next) => {
         const { name, entry, template, filename } = next
-        const chunks = env === 'production' ? ['manifest', 'vendor', name] : [name]
+        const chunks = env === 'production' ? ['manifest', 'polyfill', 'vendor', 'styles', name] : [name]
         config.plugins.push(
           new defaultEntryHTMLPlugin.constructor(
             Object.assign({}, defaultEntryHTMLPlugin.options, {
@@ -52,6 +52,14 @@ function multiEntryPlugin(entries) {
               test: /[\\/]node_modules[\\/](react|react-dom|echarts-for-react)[\\/]/,
               name: 'vendor',
               chunks: 'all'
+            },
+
+            polyfill: {
+              test: /[\\/]node_modules[\\/](core-js|raf|@babel|babel)[\\/]/,
+              name: 'polyfill',
+              priority: 30,
+              chunks: 'all',
+              reuseExistingChunk: true
             },
 
             styles: {
@@ -90,5 +98,10 @@ const entries = globby.sync([paths.appSrc + '/*/index.js'], { cwd: process.cwd()
 }, [])
 
 module.exports = {
-  webpack: override(multiEntryPlugin(entries))
+  webpack: override(multiEntryPlugin(entries)),
+
+  paths: paths => {
+    // paths.servedPath = '/react-cultivation/'
+    return paths
+  }
 }
