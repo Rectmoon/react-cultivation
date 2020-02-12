@@ -65,7 +65,7 @@ function multiEntryPlugin(entries) {
 
             styles: {
               name: 'styles',
-              test: /\.css|less$/,
+              test: /(reset|common)\.css|less$/,
               chunks: 'all',
               enforce: true
             }
