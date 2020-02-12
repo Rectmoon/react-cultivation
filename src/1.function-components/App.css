@@ -1,0 +1,25 @@
+*,
+*::before,
+*::after {
+  margin: 0;
+  box-sizing: border-box;
+}
+
+body {
+  min-height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-size: 2rem;
+  text-align: center;
+}
+
+button {
+  margin: 0 20px;
+  padding: 10px 20px;
+  cursor: pointer;
+  outline: none;
+  border: 1px dashed #ccc;
+  background: none;
+  vertical-align: middle;
+}

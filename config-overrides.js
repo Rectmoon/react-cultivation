@@ -13,11 +13,12 @@ function multiEntryPlugin(entries) {
     const defaultEntryName = 'main'
     const defaultEntryHTMLPlugin = config.plugins.filter(plugin => plugin.constructor.name === 'HtmlWebpackPlugin')[0]
     defaultEntryHTMLPlugin.options.chunks = [defaultEntryName]
+    const isDev = env === 'development'
 
     config.entry = entries.reduce(
       (res, next) => {
         const { name, entry, template, filename } = next
-        const chunks = env === 'production' ? ['manifest', 'polyfill', 'vendor', 'styles', name] : [name]
+        const chunks = env === !isDev ? ['manifest', 'polyfill', 'vendor', 'styles', name] : [name]
         config.plugins.push(
           new defaultEntryHTMLPlugin.constructor(
             Object.assign({}, defaultEntryHTMLPlugin.options, {
@@ -27,7 +28,7 @@ function multiEntryPlugin(entries) {
             })
           )
         )
-        res[name] = entry
+        res[name] = isDev ? [require.resolve('react-dev-utils/webpackHotDevClient'), entry] : [entry]
         return res
       },
       { [defaultEntryName]: config.entry }
