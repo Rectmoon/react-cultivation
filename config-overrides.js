@@ -2,39 +2,43 @@ const fs = require('fs')
 const path = require('path')
 const globby = require('globby')
 const { paths } = require('react-app-rewired')
-const { override } = require('customize-cra')
+const { override, addLessLoader, addExternalBabelPlugin } = require('customize-cra')
 
 const resolve = dir => path.resolve(__dirname, dir)
 const defaultTemplatePath = resolve('public/index.html')
+const isDev = process.env.NODE_ENV === 'development'
 
-function multiEntryPlugin(entries) {
-  return function(config, env) {
+function multiEntryPlugin (entries) {
+  return function (config) {
     if (!entries || !entries.length) return config
     const defaultEntryName = 'main'
-    const defaultEntryHTMLPlugin = config.plugins.filter(plugin => plugin.constructor.name === 'HtmlWebpackPlugin')[0]
+    const defaultEntryHTMLPlugin = config.plugins.filter(
+      plugin => plugin.constructor.name === 'HtmlWebpackPlugin',
+    )[0]
     defaultEntryHTMLPlugin.options.chunks = [defaultEntryName]
-    const isDev = env === 'development'
 
     config.entry = entries.reduce(
       (res, next) => {
         const { name, entry, template, filename } = next
-        const chunks = env === !isDev ? ['manifest', 'polyfill', 'vendor', 'styles', name] : [name]
+        const chunks = !isDev ? ['manifest', 'polyfill', 'vendor', 'styles', name] : [name]
         config.plugins.push(
           new defaultEntryHTMLPlugin.constructor(
             Object.assign({}, defaultEntryHTMLPlugin.options, {
               filename,
               template,
-              chunks
-            })
-          )
+              chunks,
+            }),
+          ),
         )
-        res[name] = isDev ? [require.resolve('react-dev-utils/webpackHotDevClient'), entry] : [entry]
+        res[name] = isDev
+          ? [require.resolve('react-dev-utils/webpackHotDevClient'), entry]
+          : [entry]
         return res
       },
-      { [defaultEntryName]: config.entry }
+      { [defaultEntryName]: config.entry },
     )
 
-    if (env === 'development') {
+    if (isDev) {
       config.output.filename = 'static/js/[name].js'
     } else {
       config.output.filename = 'static/js/[name].[chunkhash:6].js'
@@ -44,7 +48,7 @@ function multiEntryPlugin(entries) {
         moduleIds: 'hashed',
 
         runtimeChunk: {
-          name: 'manifest'
+          name: 'manifest',
         },
 
         splitChunks: {
@@ -52,7 +56,7 @@ function multiEntryPlugin(entries) {
             vendor: {
               test: /[\\/]node_modules[\\/](react|react-dom|echarts-for-react)[\\/]/,
               name: 'vendor',
-              chunks: 'all'
+              chunks: 'all',
             },
 
             polyfill: {
@@ -60,17 +64,17 @@ function multiEntryPlugin(entries) {
               name: 'polyfill',
               priority: 30,
               chunks: 'all',
-              reuseExistingChunk: true
+              reuseExistingChunk: true,
             },
 
             styles: {
               name: 'styles',
               test: /(reset|common)\.css|less$/,
               chunks: 'all',
-              enforce: true
-            }
-          }
-        }
+              enforce: true,
+            },
+          },
+        },
       }
     }
 
@@ -78,31 +82,39 @@ function multiEntryPlugin(entries) {
   }
 }
 
-const entries = globby.sync([paths.appSrc + '/*/index.js'], { cwd: process.cwd() }).reduce((res, entry) => {
-  const name = path
-    .relative(paths.appSrc, entry)
-    .split(path.sep)
-    .slice(0, -1)
-    .join('/')
-  const tpName = entry.replace('.js', '.html')
-  const template = fs.existsSync(tpName) ? tpName : defaultTemplatePath
-  const filename = `${name}.html`
+const entries = globby
+  .sync([paths.appSrc + '/*/index.js'], { cwd: process.cwd() })
+  .reduce((res, entry) => {
+    const name = path
+      .relative(paths.appSrc, entry)
+      .split(path.sep)
+      .slice(0, -1)
+      .join('/')
+    const tpName = entry.replace('.js', '.html')
+    const template = fs.existsSync(tpName) ? tpName : defaultTemplatePath
+    const filename = `${name}.html`
 
-  res.push({
-    name,
-    entry,
-    template,
-    filename
-  })
+    res.push({
+      name,
+      entry,
+      template,
+      filename,
+    })
 
-  return res
-}, [])
+    return res
+  }, [])
+
+const plugins = [
+  multiEntryPlugin(entries),
+  addLessLoader(),
+  isDev && addExternalBabelPlugin('react-hot-loader/babel'),
+].filter(Boolean)
 
 module.exports = {
-  webpack: override(multiEntryPlugin(entries)),
+  webpack: override.apply(null, plugins),
 
   paths: paths => {
     // paths.servedPath = '/react-cultivation/'
     return paths
-  }
+  },
 }
