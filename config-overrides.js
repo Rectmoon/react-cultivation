@@ -113,6 +113,34 @@ const plugins = [
 module.exports = {
   webpack: override.apply(null, plugins),
 
+  devServer: function (configFunction) {
+    return function (proxy, allowedHost) {
+      const config = configFunction(proxy, allowedHost)
+      console.log(config)
+
+      config.proxy = {
+        '/api': {
+          target: 'https://www.bootcdn.cn',
+          changeOrigin: true,
+          secure: false,
+          pathRewrite: {
+            '^/api': '',
+          },
+        },
+      }
+      console.log(config.proxy)
+      // const fs = require('fs');
+      // config.https = {
+      //   key: fs.readFileSync(process.env.REACT_HTTPS_KEY, 'utf8'),
+      //   cert: fs.readFileSync(process.env.REACT_HTTPS_CERT, 'utf8'),
+      //   ca: fs.readFileSync(process.env.REACT_HTTPS_CA, 'utf8'),
+      //   passphrase: process.env.REACT_HTTPS_PASS
+      // };
+
+      return config
+    }
+  },
+
   paths: paths => {
     // paths.servedPath = '/react-cultivation/'
     return paths

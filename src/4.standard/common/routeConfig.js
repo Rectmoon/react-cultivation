@@ -1,8 +1,9 @@
 import { App } from '../features/home'
 import { PageNotFound } from '../features/common'
 import homeRoute from '../features/home/route'
+import demoRoute from '../features/demo/route'
 
-const childRoutes = [homeRoute]
+const childRoutes = [homeRoute, demoRoute]
 
 const routes = [
   {
