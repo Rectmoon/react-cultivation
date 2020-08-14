@@ -1,9 +1,10 @@
 import React from 'react'
+import { Link } from 'react-router-dom'
 import { useFetchList } from './redux/hooks'
 
 export default function ListPage () {
   const { list, fetchList, fetchListPending, fetchListError } = useFetchList()
-  console.log(list)
+
   return (
     <div className='demo-reddit-list-page'>
       <h1>Reddit API Usage</h1>
@@ -20,6 +21,18 @@ export default function ListPage () {
             <li key={title + description}>
               <h3>{title}</h3>
               <p>{description}</p>
+              <Link
+                to={{
+                  pathname: `/demo/detail/${title}`,
+                  search: 'a=1',
+                  state: {
+                    title,
+                    description,
+                  },
+                }}
+              >
+                详情
+              </Link>
             </li>
           ))}
         </ul>

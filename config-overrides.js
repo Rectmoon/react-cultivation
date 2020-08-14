@@ -116,7 +116,6 @@ module.exports = {
   devServer: function (configFunction) {
     return function (proxy, allowedHost) {
       const config = configFunction(proxy, allowedHost)
-      console.log(config)
 
       config.proxy = {
         '/api': {
@@ -128,7 +127,6 @@ module.exports = {
           },
         },
       }
-      console.log(config.proxy)
       // const fs = require('fs');
       // config.https = {
       //   key: fs.readFileSync(process.env.REACT_HTTPS_KEY, 'utf8'),

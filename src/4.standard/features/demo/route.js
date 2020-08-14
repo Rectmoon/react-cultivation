@@ -1,4 +1,4 @@
-import { WelcomePage, CounterPage, ListPage, Layout } from './'
+import { WelcomePage, CounterPage, ListPage, DetailPage, Layout } from './'
 
 export default {
   path: 'demo',
@@ -7,5 +7,6 @@ export default {
     { path: '', component: WelcomePage, isIndex: true },
     { path: 'counter', component: CounterPage },
     { path: 'list', component: ListPage },
+    { path: 'detail/:id', component: DetailPage },
   ],
 }
